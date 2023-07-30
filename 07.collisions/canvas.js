@@ -45,7 +45,7 @@ function getDistance(x1, y1, x2, y2) {
 function rotate(velocity, angle) {
         const rotateVelocities = {
                 x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
-                y: velocity.x * Math.sign(angle) + velocity.y * Math.cos(angle),
+                y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle),
         };
 
         return rotateVelocities;
@@ -105,6 +105,7 @@ class Particle {
                 this.radius = radius;
                 this.color = color;
                 this.mass = 1;
+                this.opacity = 0;
         }
 
         update(particles) {
@@ -123,6 +124,14 @@ class Particle {
                         this.velocity.y = -this.velocity.y;
                 }
 
+                //mouse collision detection
+                if (getDistance(mouse.x, mouse.y, this.x, this.y) < 120 && this.opacity <= 0.2) {
+                        this.opacity += 0.02;
+                } else if (this.opacity > 0) {
+                        this.opacity -= 0.02;
+                        this.opacity = Math.max(0, this.opacity);
+                }
+
                 this.x += this.velocity.x;
                 this.y += this.velocity.y;
         }
@@ -130,6 +139,11 @@ class Particle {
         draw() {
                 c.beginPath();
                 c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
+                c.save();
+                c.globalAlpha = this.opacity;
+                c.fillStyle = this.color;
+                c.fill();
+                c.restore();
                 c.strokeStyle = this.color;
                 c.stroke();
                 c.closePath();
@@ -139,8 +153,9 @@ class Particle {
 const particles = [];
 
 function init() {
+        particles.splice(0, particles.length);
         const radius = 15;
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 400; i++) {
                 let x = randomIntFromRange(radius, canvas.width - radius);
                 let y = randomIntFromRange(radius, canvas.height - radius);
                 const color = randomColor(COLOR_ARRAY);
